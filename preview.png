@@ -1,0 +1,8 @@
+<svg viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="630" fill="#fdf6f0"/>
+    <rect x="400" y="165" width="400" height="300" rx="15" fill="#f4e4bc" stroke="#d4c5a3" stroke-width="4"/>
+    <path d="M400 165 L600 315 L800 165" fill="#e8d5aa" stroke="#d4c5a3" stroke-width="4"/>
+    <circle cx="600" cy="315" r="40" fill="#d4145a"/>
+    <text x="600" y="332" text-anchor="middle" fill="white" font-size="48" font-family="Arial">♥</text>
+    <text x="600" y="500" text-anchor="middle" fill="#d4145a" font-size="48" font-family="Arial">¡Tienes una carta especial! 💌</text>
+</svg>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Agregamos meta tags para previsualización en WhatsApp -->
+    <meta property="og:title" content="¡Tienes una carta especial! 💌">
+    <meta property="og:description" content="Alguien te ha enviado una carta sorpresa. ¡Ábrela!">
+    <meta property="og:image" content="https://raw.githubusercontent.com/TU-USUARIO/carta-sorpresa/main/preview.png">
+    <title>Carta Sorpresa</title>
+    <!-- El resto del código -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #fdf6f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            transition: background 1.5s ease;
+            touch-action: none;
+        }
+
+        .flower {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+            font-size: min(24px, 6vw);
+            animation: floatUp 4s linear forwards;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) rotate(360deg);
+            }
+        }
+
+        @keyframes shine {
+            0% { box-shadow: 0 0 5px #ff69b4; }
+            50% { box-shadow: 0 0 20px #ff69b4; }
+            100% { box-shadow: 0 0 5px #ff69b4; }
+        }
+
+        .container {
+            position: fixed;
+            width: min(90vw, 300px);
+            height: min(60vh, 200px);
+            perspective: 1000px;
+            touch-action: none;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .envelope {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .envelope.opened {
+            transform: translateY(-150vh) rotate(720deg) scale(0);
+            opacity: 0;
+        }
+
+        .envelope-front, .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            background: #f4e4bc;
+            border: 2px solid #d4c5a3;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .envelope-back {
+            transform: rotateX(180deg);
+            background: linear-gradient(45deg, #f4e4bc, #e8d5aa);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #e8d5aa;
+            clip-path: polygon(0 0, 50% 50%, 100% 0);
+            transform-origin: top;
+            transition: transform 0.6s ease;
+            z-index: 2;
+        }
+
+        .envelope.opened .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(50px, 15vw);
+            height: min(50px, 15vw);
+            background: linear-gradient(45deg, #d4145a, #ff0844);
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: min(24px, 6vw);
+        }
+
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(90vw, 300px);
+            padding: min(20px, 5vw);
+            text-align: center;
+            color: #4a4a4a;
+            line-height: 1.6;
+            font-size: clamp(14px, 3.5vw, 16px);
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 2000;
+        }
+
+        .message.visible {
+            opacity: 1;
+        }
+
+        .message h2 {
+            color: #d4145a;
+            margin-bottom: 15px;
+            font-size: clamp(18px, 4.5vw, 24px);
+        }
+
+        .hint {
+            position: fixed;
+            bottom: min(20px, 5vh);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: min(10px, 2.5vw) min(20px, 5vw);
+            border-radius: 20px;
+            font-size: clamp(12px, 3.5vw, 14px);
+            color: #d4145a;
+            opacity: 0.8;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            width: min(90vw, 300px);
+            z-index: 1000;
+        }
+
+        .new-envelope {
+            position: fixed;
+            width: min(90vw, 300px);
+            height: min(60vh, 200px);
+            left: 50%;
+            top: -100vh;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            perspective: 1000px;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform-style: preserve-3d;
+            animation: shine 2s infinite;
+            background: linear-gradient(45deg, #ffe6f0, #fff0f5);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(255, 105, 180, 0.3);
+        }
+
+        .new-envelope.active {
+            opacity: 1;
+            top: 50%;
+        }
+
+        .new-envelope .new-envelope-flap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ffb6c1, #ffc0cb);
+            clip-path: polygon(0 0, 50% 50%, 100% 0);
+            transform-origin: top;
+            transition: transform 0.6s ease;
+            z-index: 2;
+        }
+
+        .new-envelope .new-seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(60px, 18vw);
+            height: min(60px, 18vw);
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(255,105,180,0.5);
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: min(30px, 8vw);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+
+            .message {
+                padding: 15px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            .hint {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .container {
+                height: min(50vh, 180px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="envelope" id="envelope">
+            <div class="envelope-front">
+                <div class="envelope-flap"></div>
+                <div class="seal">♥</div>
+            </div>
+            <div class="envelope-back"></div>
+        </div>
+    </div>
+    <div class="message" id="message">
+        <h2>Para la de linda sonrisa</h2>
+        <p>
+            Como este sobre que intentabas alcanzar,<br>
+            el amor verdadero requiere perseverancia.<br>
+            Para amar hay que luchar, ¿qué clase de amor tienes si no luchas por él?<br><br>
+            Cada intento, cada momento,<br>
+            ha valido la pena porque eres tú.<br>
+            Ahora que me has alcanzado,<br>
+            quiero que sepas que cada día<br>
+            me enamoro más de ti,<br>
+            de tu sonrisa que ilumina mi mundo,<br>
+            de tus ojos que me deslumbran,<br>
+            de ti que me dejas sin palabras,<br>
+            de tu corazón que eternamente quiero hacer latir junto al mío. ❤️
+        </p>
+        <div style="margin-top: 15px; font-size: 0.9em; color: #d4145a;">
+            Con todo mi cariño para ti <br>
+        </div>
+    </div>
+    <div class="hint" id="hint">Intenta atrapar el sobre ✨</div>
+
+    <div class="new-envelope" id="new-envelope">
+        <div class="new-envelope-flap"></div>
+        <div class="new-seal">♥</div>
+    </div>
+
+    <script>
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        function addTouchSupport(element, handler) {
+            let touchStartX, touchStartY;
+            
+            element.addEventListener('touchstart', function(e) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            element.addEventListener('touchend', function(e) {
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                
+                if (Math.abs(touchEndX - touchStartX) < 10 && 
+                    Math.abs(touchEndY - touchStartY) < 10) {
+                    handler(e);
+                }
+            }, { passive: true });
+        }
+
+        const container = document.getElementById('container');
+        const envelope = document.getElementById('envelope');
+        const message = document.getElementById('message');
+        const hint = document.getElementById('hint');
+        const newEnvelope = document.getElementById('new-envelope');
+        const body = document.body;
+        let attempts = 0;
+        let isOpened = false;
+        let isCaught = false;
+        let isMoving = false;
+        let newEnvelopeOpened = false;
+        let flowerInterval;
+
+        const flowerEmojis = ['🌹', '🌸', '💐', '🌺', '🌷', '💮', '🏵️', '🌼', '❤️', '💝', '💖', '💕'];
+
+        function createFlower() {
+            const flower = document.createElement('div');
+            flower.className = 'flower';
+            flower.style.left = Math.random() * window.innerWidth + 'px';
+            flower.style.bottom = '-50px';
+            flower.innerHTML = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
+            flower.style.fontSize = (24 + Math.random() * 24) + 'px';
+            body.appendChild(flower);
+
+            setTimeout(() => {
+                body.removeChild(flower);
+            }, 4000);
+        }
+
+        function startFlowers() {
+            clearInterval(flowerInterval);
+            for(let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createFlower();
+                }, i * 100);
+            }
+            flowerInterval = setInterval(createFlower, 200);
+        }
+
+        function getRandomPosition() {
+            const padding = 100;
+            const maxX = window.innerWidth - padding * 2;
+            const maxY = window.innerHeight - padding * 2;
+            return {
+                x: padding + Math.random() * maxX,
+                y: padding + Math.random() * maxY
+            };
+        }
+
+        function moveToCenter() {
+            container.style.left = '50%';
+            container.style.top = '50%';
+            container.style.transform = 'translate(-50%, -50%)';
+        }
+
+        function showNewEnvelope() {
+            newEnvelope.classList.add('active');
+            newEnvelope.addEventListener('click', handleNewEnvelopeClick);
+        }
+
+        function handleNewEnvelopeClick() {
+            if (!newEnvelopeOpened) {
+                newEnvelopeOpened = true;
+                newEnvelope.querySelector('.new-envelope-flap').style.transform = 'rotateX(180deg)';
+                
+                setTimeout(() => {
+                    message.classList.add('visible');
+                    startFlowers();
+                    
+                    newEnvelope.style.transform = 'translate(-150%, -50%) scale(0.8) rotate(-15deg)';
+                    newEnvelope.style.opacity = '0.5';
+                }, 800);
+            }
+        }
+
+        function handleInteraction() {
+            if (isMoving || isOpened) return;
+    
+            if (!isCaught && attempts < 5) {
+                isMoving = true;
+                attempts++;
+                
+                const newPos = getRandomPosition();
+                envelope.classList.add('moving');
+                container.style.left = newPos.x + 'px';
+                container.style.top = newPos.y + 'px';
+                container.style.transform = 'translate(-50%, -50%)';
+    
+                setTimeout(() => {
+                    isMoving = false;
+                    if (attempts >= 5) {
+                        isCaught = true;
+                        envelope.classList.add('caught');
+                        moveToCenter();
+                        hint.textContent = 'Ahora puedes abrir el sobre ❤️';
+                    }
+                }, 1000);
+            } else if (isCaught && !isOpened) {
+                isOpened = true;
+                envelope.classList.add('opened');
+    
+                setTimeout(() => {
+                    hint.style.opacity = '0';
+                    
+                    const caisteMessage = document.createElement('div');
+                    caisteMessage.textContent = '¡Caiste!';
+                    caisteMessage.style.position = 'fixed';
+                    caisteMessage.style.top = '50%';
+                    caisteMessage.style.left = '50%';
+                    caisteMessage.style.transform = 'translate(-50%, -50%)';
+                    caisteMessage.style.fontSize = '24px';
+                    caisteMessage.style.color = '#d4145a';
+                    caisteMessage.style.zIndex = '2000';
+                    body.appendChild(caisteMessage);
+    
+                    let time = 5;
+                    const timer = document.createElement('div');
+                    timer.style.position = 'fixed';
+                    timer.style.top = '60%';
+                    timer.style.left = '50%';
+                    timer.style.transform = 'translate(-50%, -50%)';
+                    timer.style.fontSize = '18px';
+                    timer.style.color = '#d4145a';
+                    timer.style.zIndex = '2000';
+                    body.appendChild(timer);
+    
+                    const interval = setInterval(() => {
+                        time--;
+                        timer.textContent = `Tiempo restante: ${time} segundos`;
+    
+                        if (time === 0) {
+                            clearInterval(interval);
+                            body.removeChild(caisteMessage);
+                            body.removeChild(timer);
+    
+                            container.style.opacity = '0';
+                            container.style.pointerEvents = 'none';
+    
+                            setTimeout(() => {
+                                showNewEnvelope();
+                                hint.textContent = 'Haz clic en el sobre para ver tu mensaje ❤️';
+                                hint.style.opacity = '1';
+                            }, 1000);
+                        }
+                    }, 1000);
+                }, 800);
+            }
+        }
+    
+        moveToCenter();
+        envelope.addEventListener('click', handleInteraction);
+        addTouchSupport(envelope, handleInteraction);
+        addTouchSupport(newEnvelope, handleNewEnvelopeClick);
+
+        window.addEventListener('beforeunload', () => {
+            if (flowerInterval) {
+                clearInterval(flowerInterval);
+            }
+        });
+    </script>
+</body>
+</html>
